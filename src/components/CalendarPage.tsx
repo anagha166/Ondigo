@@ -17,7 +17,7 @@ import {
 } from '../lib/calendar'
 import { formatRange, formatTime, parseIso, toIso } from '../lib/plan'
 import { isProfileReady, loadProfile, loadUser, saveProfile } from '../lib/profile'
-import { suggestWhenToGo, suggestionDays, suggestionWhen, toTrip } from '../lib/suggest'
+import { placeGuide, suggestWhenToGo, suggestionDays, suggestionWhen, toTrip } from '../lib/suggest'
 import type { TimedSuggestion, TripCategory, UserProfile, WishlistItem } from '../types'
 import { BookIcon, CalendarIcon, CategoryIcon, ChevronIcon } from './Icons'
 import { Wordmark } from './Wordmark'
@@ -27,6 +27,13 @@ const TRIP_WASH: Record<TripCategory, string> = {
   city: 'bg-city text-indigo-deep',
   mountains: 'bg-mountains text-indigo-deep',
   nature: 'bg-nature text-indigo-deep',
+}
+
+const CATEGORY_LABEL: Record<TripCategory, string> = {
+  beach: 'Beach',
+  city: 'City',
+  mountains: 'Mountains',
+  nature: 'Nature',
 }
 
 type PanelId = 'ideas' | 'list'
@@ -70,6 +77,7 @@ function CalendarView({ gcal }: { gcal: boolean }) {
     return inSemester(today, start, end) ? today : start
   })
   const [openPanel, setOpenPanel] = useState<PanelId | null>(null)
+  const [lookingAt, setLookingAt] = useState<TimedSuggestion | null>(null)
 
   const templates = useMemo(
     () => (gcal ? mergeClassTemplates(profile.classes, CLASS_TEMPLATES) : profile.classes),
@@ -98,6 +106,8 @@ function CalendarView({ gcal }: { gcal: boolean }) {
     setProfile(next)
     setSelected(suggestion.startDate)
     setMonth(startOfMonth(parseIso(suggestion.startDate)))
+    setLookingAt(null)
+    setOpenPanel(null)
   }
 
   function goMonth(next: Date) {
@@ -115,13 +125,19 @@ function CalendarView({ gcal }: { gcal: boolean }) {
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
-      if (event.key === 'Escape') setOpenPanel(null)
+      if (event.key === 'Escape') {
+        if (lookingAt) {
+          setLookingAt(null)
+          return
+        }
+        setOpenPanel(null)
+      }
       if (event.key === 'ArrowLeft') goMonth(addMonths(month, -1))
       if (event.key === 'ArrowRight') goMonth(addMonths(month, 1))
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [month])
+  }, [month, lookingAt])
 
   return (
     <div className="min-h-dvh bg-indigo text-ink antialiased">
@@ -210,21 +226,27 @@ function CalendarView({ gcal }: { gcal: boolean }) {
             const on = iso === selected
             const isToday = iso === today
             const outside = !inSemester(iso, start, end)
-            const wash = mark.trip ? 'bg-beach text-indigo-deep' : 'text-ink'
+            const planned = !mark.trip && pickDays.has(iso)
+            const wash = mark.trip
+              ? 'bg-beach text-indigo-deep'
+              : planned
+                ? 'bg-glow text-indigo-deep'
+                : 'text-ink'
             return (
               <button
                 key={iso}
                 type="button"
                 onClick={() => setSelected(iso)}
-                className={`flex aspect-square w-full flex-col items-center justify-center ${wash} ${on ? 'outline outline-2 outline-offset-[-2px] outline-glow' : ''} ${isToday && !on ? 'outline outline-1 outline-offset-[-1px] outline-quiet' : ''} ${outside ? 'opacity-35' : ''}`}
+                className={`flex aspect-square w-full items-center justify-center p-0.5 ${isToday && !on ? 'outline outline-1 outline-offset-[-1px] outline-quiet' : ''} ${outside ? 'opacity-35' : ''}`}
               >
-                <span className="text-sm leading-none">{Number(iso.slice(8))}</span>
-                {!mark.trip && (
-                  <span className="mt-1 flex h-1 items-center gap-0.5">
-                    {pickDays.has(iso) && <span className="block size-1 bg-glow" />}
-                    {mark.classes.length > 0 && <span className="block size-1 bg-class" />}
-                  </span>
-                )}
+                <span
+                  className={`flex size-full flex-col items-center justify-center ${wash} ${on ? 'outline outline-2 outline-offset-[-2px] outline-ink' : ''}`}
+                >
+                  <span className="text-sm leading-none">{Number(iso.slice(8))}</span>
+                  {!mark.trip && mark.classes.length > 0 && (
+                    <span className="mt-1 block size-1 bg-class" />
+                  )}
+                </span>
               </button>
             )
           })}
@@ -282,13 +304,22 @@ function CalendarView({ gcal }: { gcal: boolean }) {
                   <p className="text-sm text-quiet">
                     {suggestionWhen(pickForDay)} · {pickForDay.crowdNote}
                   </p>
-                  <button
-                    type="button"
-                    className="mt-2 min-h-12 text-glow hover:text-ink"
-                    onClick={() => lockIn(pickForDay)}
-                  >
-                    Add these dates
-                  </button>
+                  <div className="mt-2 flex flex-wrap gap-5">
+                    <button
+                      type="button"
+                      className="min-h-12 text-ink hover:text-glow"
+                      onClick={() => setLookingAt(pickForDay)}
+                    >
+                      Learn more
+                    </button>
+                    <button
+                      type="button"
+                      className="min-h-12 text-glow hover:text-ink"
+                      onClick={() => lockIn(pickForDay)}
+                    >
+                      Add these dates
+                    </button>
+                  </div>
                 </div>
               </article>
             )}
@@ -325,6 +356,14 @@ function CalendarView({ gcal }: { gcal: boolean }) {
         </section>
       </main>
 
+      {lookingAt && (
+        <PlaceSheet
+          suggestion={lookingAt}
+          onClose={() => setLookingAt(null)}
+          onLock={() => lockIn(lookingAt)}
+        />
+      )}
+
       {openPanel && (
         <div className="fixed inset-0 z-30">
           <button
@@ -356,7 +395,7 @@ function CalendarView({ gcal }: { gcal: boolean }) {
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto px-5 pt-4 pb-10">
               {openPanel === 'ideas' ? (
-                <IdeasList picks={picks} onLock={lockIn} />
+                <IdeasList picks={picks} onLock={lockIn} onLearn={setLookingAt} />
               ) : (
                 <BucketList items={profile.wishlist} />
               )}
@@ -403,9 +442,11 @@ function PanelButton({
 function IdeasList({
   picks,
   onLock,
+  onLearn,
 }: {
   picks: TimedSuggestion[]
   onLock: (item: TimedSuggestion) => void
+  onLearn: (item: TimedSuggestion) => void
 }) {
   if (picks.length === 0) {
     return <p className="text-sm leading-6 text-quiet">No quieter week fits the open dates right now.</p>
@@ -429,13 +470,22 @@ function IdeasList({
                   <p className="text-sm text-quiet">{item.seasonNote}</p>
                 </div>
               </div>
-              <button
-                type="button"
-                className="mt-2 min-h-12 text-glow hover:text-ink"
-                onClick={() => onLock(item)}
-              >
-                Add these dates
-              </button>
+              <div className="mt-2 flex flex-wrap gap-5">
+                <button
+                  type="button"
+                  className="min-h-12 text-ink hover:text-glow"
+                  onClick={() => onLearn(item)}
+                >
+                  Learn more
+                </button>
+                <button
+                  type="button"
+                  className="min-h-12 text-glow hover:text-ink"
+                  onClick={() => onLock(item)}
+                >
+                  Add these dates
+                </button>
+              </div>
             </article>
           </li>
         ))}
@@ -468,5 +518,87 @@ function BucketList({ items }: { items: WishlistItem[] }) {
         </li>
       ))}
     </ul>
+  )
+}
+
+function PlaceSheet({
+  suggestion,
+  onClose,
+  onLock,
+}: {
+  suggestion: TimedSuggestion
+  onClose: () => void
+  onLock: () => void
+}) {
+  const guide = placeGuide(suggestion.destination)
+
+  return (
+    <div className="fixed inset-0 z-40">
+      <button
+        type="button"
+        className="absolute inset-0 bg-indigo-deep/70"
+        aria-label="Close place details"
+        onClick={onClose}
+      />
+      <div
+        className="absolute inset-x-4 top-[10vh] mx-auto max-h-[80dvh] w-full max-w-md overflow-y-auto border border-line bg-indigo px-5 pt-6 pb-8 sm:inset-x-0"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="place-title"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex min-w-0 items-start gap-3">
+            <span className="flex size-10 shrink-0 items-center justify-center bg-glow text-indigo-deep">
+              <CategoryIcon category={suggestion.category} className="size-5" />
+            </span>
+            <div className="min-w-0">
+              <p className="text-xs tracking-[0.16em] text-glow uppercase">
+                {CATEGORY_LABEL[suggestion.category]}
+              </p>
+              <h2 id="place-title" className="text-xl leading-7">
+                {suggestion.destination}
+              </h2>
+              <p className="mt-1 text-sm text-quiet">{suggestionWhen(suggestion)}</p>
+            </div>
+          </div>
+          <button type="button" className="min-h-12 shrink-0 px-1 text-quiet hover:text-ink" onClick={onClose}>
+            Close
+          </button>
+        </div>
+
+        <p className="mt-6 text-base leading-7 text-ink">{guide?.reason ?? suggestion.reason}</p>
+        {guide && <p className="mt-4 text-sm leading-6 text-quiet">{guide.about}</p>}
+
+        {guide && guide.highlights.length > 0 && (
+          <div className="mt-6">
+            <p className="text-xs tracking-[0.16em] text-quiet uppercase">Do this</p>
+            <ul className="mt-3 flex flex-col gap-2">
+              {guide.highlights.map((item) => (
+                <li key={item} className="text-sm leading-6 text-ink">
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {guide && (
+          <div className="mt-6">
+            <p className="text-xs tracking-[0.16em] text-quiet uppercase">Getting there</p>
+            <p className="mt-2 text-sm leading-6 text-ink">{guide.travel}</p>
+          </div>
+        )}
+
+        <div className="mt-6">
+          <p className="text-xs tracking-[0.16em] text-quiet uppercase">Why this window</p>
+          <p className="mt-2 text-sm leading-6 text-ink">{suggestion.seasonNote}</p>
+          <p className="mt-1 text-sm leading-6 text-quiet">{suggestion.crowdNote}</p>
+        </div>
+
+        <button type="button" className="ui-btn mt-8" onClick={onLock}>
+          Add these dates
+        </button>
+      </div>
+    </div>
   )
 }

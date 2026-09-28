@@ -23,13 +23,6 @@ const WEEKDAY_TOGGLE = [
   { value: 4, label: 'Thu' },
   { value: 5, label: 'Fri' },
 ] as const
-const CATEGORIES: { value: TripCategory; label: string }[] = [
-  { value: 'city', label: 'City' },
-  { value: 'beach', label: 'Beach' },
-  { value: 'mountains', label: 'Mountains' },
-  { value: 'nature', label: 'Nature' },
-]
-
 function weekdayLabel(days: number[]) {
   return days
     .map((day) => WEEKDAY_TOGGLE.find((item) => item.value === day)?.label)
@@ -54,7 +47,6 @@ export function SetupPage() {
     destination: '',
     startDate: '',
     endDate: '',
-    category: 'city' as TripCategory,
   })
   const [wishDraft, setWishDraft] = useState('')
   const [ideas, setIdeas] = useState<TimedSuggestion[]>([])
@@ -89,17 +81,19 @@ export function SetupPage() {
   function addTrip(event: FormEvent) {
     event.preventDefault()
     const destination = tripDraft.destination.trim()
-    if (!destination || !tripDraft.startDate || !tripDraft.endDate) return
+    const startDate = tripDraft.startDate
+    const endDate = tripDraft.endDate || startDate
+    if (!destination || !startDate) return
     const nextTrip: TripEntry = {
       type: 'trip',
       destination,
-      startDate: tripDraft.startDate,
-      endDate: tripDraft.endDate < tripDraft.startDate ? tripDraft.startDate : tripDraft.endDate,
+      startDate,
+      endDate: endDate < startDate ? startDate : endDate,
       cost: 0,
-      category: tripDraft.category,
+      category: 'city',
     }
     persist({ ...profile, trips: [...profile.trips, nextTrip] })
-    setTripDraft({ destination: '', startDate: '', endDate: '', category: 'city' })
+    setTripDraft({ destination: '', startDate: '', endDate: '' })
   }
 
   function addWish(item: WishlistItem) {
@@ -344,19 +338,28 @@ export function SetupPage() {
                     setTripDraft((current) => ({ ...current, destination: event.target.value }))
                   }
                   placeholder="Cinque Terre"
+                  required
                 />
               </label>
               <div className="grid grid-cols-2 gap-4">
                 <label className="block">
                   <span className="text-xs tracking-[0.16em] text-quiet uppercase">Start</span>
-                  <input
-                    className="ui-field"
-                    type="date"
-                    value={tripDraft.startDate}
-                    onChange={(event) =>
-                      setTripDraft((current) => ({ ...current, startDate: event.target.value }))
-                    }
-                  />
+                    <input
+                      className="ui-field"
+                      type="date"
+                      value={tripDraft.startDate}
+                      onChange={(event) =>
+                        setTripDraft((current) => ({
+                          ...current,
+                          startDate: event.target.value,
+                          endDate:
+                            current.endDate && current.endDate < event.target.value
+                              ? event.target.value
+                              : current.endDate,
+                        }))
+                      }
+                      required
+                    />
                 </label>
                 <label className="block">
                   <span className="text-xs tracking-[0.16em] text-quiet uppercase">End</span>
@@ -369,18 +372,6 @@ export function SetupPage() {
                     }
                   />
                 </label>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {CATEGORIES.map((item) => (
-                  <button
-                    key={item.value}
-                    type="button"
-                    onClick={() => setTripDraft((current) => ({ ...current, category: item.value }))}
-                    className={`min-h-10 px-4 text-sm ${tripDraft.category === item.value ? 'bg-ink text-indigo' : 'border border-line'}`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
               </div>
               <button type="submit" className="ui-btn-ghost">
                 Add trip

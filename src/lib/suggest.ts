@@ -16,6 +16,9 @@ type Place = {
   destination: string
   category: TripCategory
   reason: string
+  about: string
+  highlights: string[]
+  travel: string
   tags: string[]
   stayDays: number
   /** 1–12 */
@@ -25,11 +28,27 @@ type Place = {
   seasonNote: string
 }
 
+export type PlaceGuide = Pick<
+  Place,
+  | 'destination'
+  | 'category'
+  | 'reason'
+  | 'about'
+  | 'highlights'
+  | 'travel'
+  | 'crowdNote'
+  | 'seasonNote'
+>
+
 const CATALOG: Place[] = [
   {
     destination: 'Florence',
     category: 'city',
     reason: 'Uffizi, Duomo, and a walkable art city.',
+    about:
+      'Three days is enough if you pick a neighborhood and walk. Skip the 8am ticket panic — on a November weekday the Uffizi is a museum again.',
+    highlights: ['Uffizi without the summer queue', 'Duomo climb', 'Dinner in Oltrarno'],
+    travel: 'From Bologna, Frecciarossa is about 40 minutes. Santa Maria Novella is a short walk to the center.',
     tags: ['art', 'history', 'cities', 'museum', 'gallery', 'renaissance'],
     stayDays: 3,
     bestMonths: [10, 11, 2, 3],
@@ -41,6 +60,10 @@ const CATALOG: Place[] = [
     destination: 'Venice',
     category: 'city',
     reason: 'Canals, Biennale energy, and a long weekend pace.',
+    about:
+      'Stay overnight. Day-trippers leave by early evening and the city drops a register — that is the version worth the ticket.',
+    highlights: ['Vaporetto after the rush', 'Accademia', 'One quieter island, not a checklist'],
+    travel: 'Regionale from Bologna is about 1h30, or Freccia to Mestre and ten minutes more.',
     tags: ['art', 'cities', 'history', 'travel'],
     stayDays: 3,
     bestMonths: [10, 11, 1, 2],
@@ -52,6 +75,10 @@ const CATALOG: Place[] = [
     destination: 'Cinque Terre',
     category: 'beach',
     reason: 'Cliff towns and swims between trains.',
+    about:
+      'Five towns on a rail line. Swim if the water is still warm, hike if it is not — you do not need all five in one weekend.',
+    highlights: ['Monterosso swim', 'Vernazza harbor', 'One trail, not a town-hop marathon'],
+    travel: 'Train via La Spezia. It slows after Pisa, which is the point.',
     tags: ['beach', 'nature', 'travel', 'sea', 'coast', 'hike'],
     stayDays: 3,
     bestMonths: [5, 6, 9, 10],
@@ -63,6 +90,10 @@ const CATALOG: Place[] = [
     destination: 'Vienna',
     category: 'city',
     reason: 'Secession art, coffee houses, and museums.',
+    about:
+      'Palaces in the morning, a coffee house that does not mind if you sit, and one museum instead of four.',
+    highlights: ['Belvedere', 'A long coffee-house afternoon', 'A leftover concert ticket if you luck into one'],
+    travel: 'Nightjet or a cheap flight. From Bologna it is a long train or about 90 minutes in the air.',
     tags: ['art', 'history', 'cities', 'food', 'museum'],
     stayDays: 3,
     bestMonths: [10, 11, 12],
@@ -74,6 +105,10 @@ const CATALOG: Place[] = [
     destination: 'Interlaken',
     category: 'mountains',
     reason: 'Alps in a weekend — lakes and ridge walks.',
+    about:
+      'Two lakes, one ridge, and an early train so you are not walking with the coach tours.',
+    highlights: ['A lake boat or Harder Kulm', 'One ridge walk', 'A meal you earned'],
+    travel: 'Train via Milan and Spiez. It is a long day; sleep in Interlaken, not in a station.',
     tags: ['mountains', 'nature', 'hike', 'alps', 'travel'],
     stayDays: 3,
     bestMonths: [9, 10],
@@ -85,6 +120,10 @@ const CATALOG: Place[] = [
     destination: 'Lisbon',
     category: 'beach',
     reason: 'Light, tiles, and the Atlantic an hour away.',
+    about:
+      'Hills, tiles, and a train to the Atlantic when the city feels tight. Four days lets you stop rushing the viewpoints.',
+    highlights: ['Tram once, then walk', 'A neighborhood tasca, not a viewpoint dinner', 'Cascais for the afternoon'],
+    travel: 'From most Erasmus cities this is a flight. Book a midweek overnight and it stays cheap.',
     tags: ['beach', 'food', 'cities', 'travel', 'nightlife'],
     stayDays: 4,
     bestMonths: [10, 11, 3, 4],
@@ -96,6 +135,10 @@ const CATALOG: Place[] = [
     destination: 'Berlin',
     category: 'city',
     reason: 'Galleries by day, late nights after.',
+    about:
+      'A city that does not close at eleven. One museum morning, then let the rest of the trip be neighborhoods.',
+    highlights: ['Museum Island once', 'A gallery in Mitte you did not plan', 'Kreuzberg after midnight'],
+    travel: 'Flix or a flight. From Bologna it is about two hours in the air.',
     tags: ['art', 'nightlife', 'cities', 'history'],
     stayDays: 3,
     bestMonths: [10, 11, 3],
@@ -107,6 +150,10 @@ const CATALOG: Place[] = [
     destination: 'Scottish Highlands',
     category: 'nature',
     reason: 'Big skies, lochs, and empty roads.',
+    about:
+      'Go north of Inverness or pick one loch and stay. Four days, or the travel eats the trip.',
+    highlights: ['One glen walk', 'A quiet inn lunch', 'Skip the coach loop'],
+    travel: 'Fly to Inverness or Edinburgh, then a long train or a hired car.',
     tags: ['nature', 'mountains', 'hike', 'travel'],
     stayDays: 4,
     bestMonths: [9, 10],
@@ -118,6 +165,10 @@ const CATALOG: Place[] = [
     destination: 'Rome',
     category: 'city',
     reason: 'Ruins, churches, and carbonara as a day plan.',
+    about:
+      'Ruins in the morning, a neighborhood lunch, churches when the light drops. Four days keeps it from becoming a sprint.',
+    highlights: ['Forum before noon', 'Testaccio for food', 'Borghese if you book ahead'],
+    travel: 'Frecciarossa from Bologna is about 2h15. Termini is chaotic; walk south.',
     tags: ['art', 'history', 'food', 'cities', 'travel'],
     stayDays: 4,
     bestMonths: [10, 11, 3, 4],
@@ -129,6 +180,10 @@ const CATALOG: Place[] = [
     destination: 'Barcelona',
     category: 'beach',
     reason: 'Gaudí, tapas, and a beach after class week.',
+    about:
+      'One Gaudí, then get off the Rambla. In November the beach is for walking, not for towels.',
+    highlights: ['One Gaudí, not three', 'Dinner in Gràcia', 'Barceloneta at dusk'],
+    travel: 'From Bologna a two-hour flight. If you already live here, treat it as a local reset.',
     tags: ['art', 'beach', 'food', 'cities', 'nightlife'],
     stayDays: 3,
     bestMonths: [5, 6, 10, 11],
@@ -140,6 +195,10 @@ const CATALOG: Place[] = [
     destination: 'Prague',
     category: 'city',
     reason: 'Cheap trains, old town, and a beer hall night.',
+    about:
+      'Old town is a morning. The rest of the weekend is a neighborhood and a beer hall that still feels like one in November.',
+    highlights: ['Castle at opening', 'A street off the square', 'One night in Žižkov'],
+    travel: 'Flix or a flight. From Bologna it is about 90 minutes in the air.',
     tags: ['cities', 'history', 'nightlife', 'travel', 'food'],
     stayDays: 3,
     bestMonths: [10, 11, 1],
@@ -151,6 +210,10 @@ const CATALOG: Place[] = [
     destination: 'Nice',
     category: 'beach',
     reason: 'Promenade mornings and a Côte d’Azur reset.',
+    about:
+      'Promenade in the morning, a museum if it rains, socca for lunch. A reset, not a sightseeing raid.',
+    highlights: ['Promenade des Anglais', 'Musée Matisse', 'Villefranche if you have a spare afternoon'],
+    travel: 'Train via Milan and Genoa, or fly Nice. Arriving along the coast is the nicer version.',
     tags: ['beach', 'art', 'food', 'travel'],
     stayDays: 3,
     bestMonths: [5, 6, 9, 10],
@@ -283,4 +346,21 @@ export function toTrip(suggestion: TimedSuggestion): TripEntry {
 
 export function suggestionWhen(suggestion: TimedSuggestion) {
   return formatRange(suggestion.startDate, suggestion.endDate)
+}
+
+export function placeGuide(destination: string): PlaceGuide | undefined {
+  const place = CATALOG.find(
+    (item) => item.destination.toLowerCase() === destination.toLowerCase(),
+  )
+  if (!place) return
+  return {
+    destination: place.destination,
+    category: place.category,
+    reason: place.reason,
+    about: place.about,
+    highlights: place.highlights,
+    travel: place.travel,
+    crowdNote: place.crowdNote,
+    seasonNote: place.seasonNote,
+  }
 }

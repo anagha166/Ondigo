@@ -5,8 +5,8 @@ import { Wordmark } from './Wordmark'
 const PREVIEW = [
   { day: '2', tone: 'bg-beach' },
   { day: '3', tone: 'bg-beach' },
-  { day: '4', tone: 'bg-beach' },
-  { day: '5', tone: 'bg-beach' },
+  { day: '4', tone: 'bg-glow' },
+  { day: '5', tone: 'bg-glow' },
   { day: '6', tone: 'bg-indigo-mid' },
   { day: '7', tone: 'bg-indigo-mid' },
   { day: '8', tone: 'bg-indigo-mid' },
@@ -39,7 +39,7 @@ export function LandingPage() {
               </div>
             ))}
           </div>
-          <p className="mt-3 text-sm text-quiet">Planned days in orange. Free days stay indigo.</p>
+          <p className="mt-3 text-sm text-quiet">Booked in orange. Planned in lilac. Free days stay indigo.</p>
         </div>
 
         <div className="mt-10 flex w-full max-w-sm flex-col gap-3">
