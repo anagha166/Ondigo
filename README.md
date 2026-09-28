@@ -1,2 +1,10 @@
-# OMW
-Get to where you need to go
+# Ondigo
+
+Your semester, on the go. A study-abroad calendar for trips, class, and the weekends still open.
+
+## Develop
+
+```bash
+npm install
+npm run dev
+```

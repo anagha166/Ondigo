@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Syne", ui-sans-serif, system-ui, sans-serif;
+  --color-indigo: #1a1654;
+  --color-indigo-deep: #120f38;
+  --color-indigo-mid: #2a246e;
+  --color-glow: #b9a9ff;
+  --color-ink: #f6f3ff;
+  --color-quiet: #b7b0d8;
+  --color-line: #3d3680;
+  --color-beach: #e08a6a;
+  --color-city: #8fbf88;
+  --color-mountains: #7eb6d6;
+  --color-nature: #7eb6d6;
+  --color-class: #f0d36a;
+}
+
+html {
+  color-scheme: dark;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--color-indigo);
+  color: var(--color-ink);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.ui-field {
+  @apply w-full min-h-12 border-0 border-b border-line bg-transparent py-3 text-base leading-7 text-ink outline-none placeholder:text-quiet focus:border-glow;
+}
+
+.ui-btn {
+  @apply inline-flex min-h-14 w-full items-center justify-center bg-ink px-6 text-base font-medium text-indigo hover:bg-glow disabled:opacity-40;
+}
+
+.ui-btn-ghost {
+  @apply inline-flex min-h-14 w-full items-center justify-center border border-line px-6 text-base text-ink hover:border-glow;
+}
+
+.ondigo-bar {
+  animation: ondigo-bar 2.2s ease-out forwards;
+}
+
+.ondigo-pulse {
+  animation: ondigo-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes ondigo-bar {
+  from {
+    width: 12%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes ondigo-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ondigo-bar,
+  .ondigo-pulse {
+    animation: none;
+  }
+
+  .ondigo-bar {
+    width: 100%;
+  }
+}
