@@ -1,6 +1,6 @@
 # Ondigo
 
-Your semester, on the go. A study-abroad calendar for trips, class, and the weekends still open.
+A tool for students abroad, helping you plan your travels. 
 
 ## Develop
 
