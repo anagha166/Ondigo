@@ -6,7 +6,6 @@ import { INTERESTS, suggestWhenToGo, suggestionWhen } from '../lib/suggest'
 import type {
   ClassTemplate,
   TimedSuggestion,
-  TripCategory,
   TripEntry,
   UserProfile,
   WishlistItem,
