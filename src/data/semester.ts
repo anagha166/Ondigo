@@ -82,7 +82,7 @@ export const SEMESTER_ENTRIES: PlanEntry[] = [
 /** Example Bologna semester timetable, used after the fake GCal connect. */
 export const CLASS_TEMPLATES: ClassTemplate[] = [
   {
-    title: 'Italian I',
+    title: 'Italian Culture',
     weekdays: [1, 3],
     startTime: '09:00',
     endTime: '10:30',
@@ -100,7 +100,7 @@ export const CLASS_TEMPLATES: ClassTemplate[] = [
     endTime: '16:00',
   },
   {
-    title: 'Studio seminar',
+    title: 'Mosaics Studio',
     weekdays: [5],
     startTime: '10:00',
     endTime: '12:00',
